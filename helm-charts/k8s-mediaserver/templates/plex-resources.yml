@@ -8,7 +8,9 @@ metadata:
 data:
   PGID: "{{ .Values.general.pgid }}"
   PUID: "{{ .Values.general.puid }}"
+{{ if not .Values.plex.claimSecretName }}
   PLEX_CLAIM: {{ .Values.plex.claim }}
+{{end}}
 ---
 ### DEPLOYMENT
 apiVersion: apps/v1
@@ -39,6 +41,14 @@ spec:
         {{ end }}
       containers:
         - name: {{ .Chart.Name }}
+          {{ if .Values.plex.claimSecretName }}
+          env:
+            - name: PLEX_CLAIM
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.plex.claimSecretName }}
+                  key: PLEX_CLAIM
+          {{ end }}
           envFrom:
             - configMapRef:
                 name: plex-config
